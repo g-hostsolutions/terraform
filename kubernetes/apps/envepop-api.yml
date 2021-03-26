@@ -1,8 +1,14 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envepop-api
+---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: envepop-api
+  namespace: envepop-api
   labels:
     k8s-app: envepop-api
 spec:
@@ -18,20 +24,21 @@ spec:
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-      - image: envepop-api:v1
+      - image: alpine:3.10
         name: envepop-api
         ports:
         - name: http
           containerPort: 8001
         resources:
           requests:
-            cpu: "250m"
+            cpu: "256m"
             memory: "512m"
 ---
 kind: Service
 apiVersion: v1
 metadata:
   name: envepop-api
+  namespace: envepop-api
 spec:
   selector:
     k8s-app: envepop-api
@@ -42,17 +49,43 @@ spec:
   type: ClusterIP
 
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: envepop-api
+  name: ingress
+  namespace: envepop-api
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - http:
+  - host: envepop-api
+    http:
       paths:
-      - path: /envepop-api
+      - path: "/"
+        pathType: Prefix
         backend:
-          serviceName: envepop-api
-          servicePort: 8001
+          service: 
+            name: envepop-api
+            port:
+              number: 8001
+
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: envepop-api
+  namespace: envepop-api
+spec:
+  maxReplicas: 3
+  minReplicas: 1
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 30
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: envepop-api

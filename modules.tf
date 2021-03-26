@@ -28,5 +28,6 @@ module "nodes" {
   eks_cluster           = module.master.eks_cluster
   eks_cluster_sg        = module.master.security_group
   nodes_instances_sizes = var.nodes_instances_sizes
+  nodes_instances_types = var.nodes_instances_types
   auto_scale_options    = var.auto_scale_options
 }

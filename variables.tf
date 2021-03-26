@@ -12,8 +12,12 @@ variable "k8s_version" {
 
 variable "nodes_instances_sizes" {
   default = [
-    "t2.micro"
+    "t2.medium"
   ]
+}
+
+variable "nodes_instances_types" {
+  default = "AL2_x86_64"
 }
 
 variable "auto_scale_options" {

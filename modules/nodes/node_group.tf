@@ -9,6 +9,7 @@ resource "aws_eks_node_group" "cluster" {
   ]
 
   instance_types = var.nodes_instances_sizes
+  ami_type = var.nodes_instances_types
 
   scaling_config {
     desired_size = lookup(var.auto_scale_options, "desired")

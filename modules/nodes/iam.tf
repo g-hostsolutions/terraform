@@ -5,7 +5,7 @@ data "aws_iam_policy_document" "eks_nodes_role" {
     actions = [
       "sts:AssumeRole"
     ]
-
+    
     principals {
       type = "Service"
       identifiers = [
