@@ -1,0 +1,58 @@
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: envepop-api
+  labels:
+    k8s-app: envepop-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: envepop-api
+  template:
+    metadata:
+      labels:
+        k8s-app: envepop-api
+        name: envepop-api
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: envepop-api:v1
+        name: envepop-api
+        ports:
+        - name: http
+          containerPort: 8001
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512m"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: envepop-api
+spec:
+  selector:
+    k8s-app: envepop-api
+  ports:
+    - protocol: TCP
+      port: 8001
+      name: web
+  type: ClusterIP
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: envepop-api
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /envepop-api
+        backend:
+          serviceName: envepop-api
+          servicePort: 8001
