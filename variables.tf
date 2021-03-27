@@ -12,7 +12,7 @@ variable "k8s_version" {
 
 variable "nodes_instances_sizes" {
   default = [
-    "t2.medium"
+    "t2.small"
   ]
 }
 

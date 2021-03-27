@@ -1,50 +1,44 @@
 ---
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: envepop-api
----
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: envepop-api
-  namespace: envepop-api
+  name: whois
   labels:
-    k8s-app: envepop-api
+    k8s-app: whois
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      k8s-app: envepop-api
+      k8s-app: whois
   template:
     metadata:
       labels:
-        k8s-app: envepop-api
-        name: envepop-api
+        k8s-app: whois
+        name: whois
     spec:
       terminationGracePeriodSeconds: 60
       containers:
-      - image: alpine:3.10
-        name: envepop-api
+      - image: msfidelis/whois:v1
+        name: whois
         ports:
         - name: http
-          containerPort: 8001
+          containerPort: 8080
         resources:
           requests:
-            cpu: "256m"
+            cpu: "250m"
             memory: "512m"
+
 ---
 kind: Service
 apiVersion: v1
 metadata:
-  name: envepop-api
-  namespace: envepop-api
+  name: whois
 spec:
   selector:
-    k8s-app: envepop-api
+    k8s-app: whois
   ports:
     - protocol: TCP
-      port: 8001
+      port: 8080
       name: web
   type: ClusterIP
 
@@ -52,40 +46,17 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress
-  namespace: envepop-api
+  name: whois
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: envepop-api
-    http:
+  - http:
       paths:
-      - path: "/"
+      - path: /whois
         pathType: Prefix
         backend:
-          service: 
-            name: envepop-api
-            port:
-              number: 8001
-
----
-apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: envepop-api
-  namespace: envepop-api
-spec:
-  maxReplicas: 3
-  minReplicas: 1
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 30
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: envepop-api
+          service:
+              name: whois
+              port:
+                number: 8080
